@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0E0E0F;
+  --surface: #1A1A1C;
+  --surface2: #242426;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #F0EFE9;
+  --muted: rgba(240,239,233,0.38);
+  --muted2: rgba(240,239,233,0.6);
+  --accent: #C8F060;
+  --red: #FF6B5B;
+  --blue: #5B9CF6;
+  --teal: #2DD4BF;
+  --r: 16px;
+  --r-sm: 10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px}
+
+/* Header */
+.header{padding:20px 18px 0;background:var(--bg);position:sticky;top:0;z-index:20;border-bottom:1px solid var(--border)}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.header-top h1{font-family:"Syne",sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px}
+.header-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.refresh-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border2);background:var(--surface);color:var(--muted2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.3s}
+.refresh-btn.spin{animation:spin 0.6s linear}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* View toggle */
+.view-toggle{display:flex;gap:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:3px;margin-bottom:14px}
+.toggle-btn{flex:1;padding:8px;border:none;background:transparent;color:var(--muted2);font-family:"Syne",sans-serif;font-size:13px;font-weight:700;cursor:pointer;border-radius:8px;transition:all 0.2s;letter-spacing:0.03em}
+.toggle-btn.active{background:var(--accent);color:#0E0E0F}
+
+/* Month nav */
+.month-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.month-nav{width:34px;height:34px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;color:var(--muted2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.month-nav:disabled{opacity:0.25;cursor:default}
+.month-label{font-family:"Syne",sans-serif;font-size:17px;font-weight:800;color:var(--text)}
+
+.main{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+
+/* Stat cards */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:15px;position:relative;overflow:hidden}
+.stat-card.full{grid-column:1/-1}
+.stat-card.hi{border-color:rgba(200,240,96,0.22);background:rgba(200,240,96,0.05)}
+.stat-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:7px}
+.stat-val{font-family:"Syne",sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.8px;line-height:1}
+.stat-val.accent{color:var(--accent)}
+.stat-val.red{color:var(--red)}
+.stat-val.sm{font-size:19px}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:5px}
+.stat-icon{position:absolute;top:12px;right:12px;font-size:17px;opacity:0.45}
+
+/* Split / settlement */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:17px}
+.card-title{font-family:"Syne",sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:13px}
+.split-row{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.split-name{font-size:13px;font-weight:500;min-width:76px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.split-bar-wrap{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.split-bar{height:100%;border-radius:3px;transition:width 0.55s cubic-bezier(.4,0,.2,1)}
+.split-bar.a{background:var(--accent)}
+.split-bar.b{background:var(--blue)}
+.split-pct{font-size:12px;font-family:"Syne",sans-serif;font-weight:700;min-width:34px;text-align:right;color:var(--muted2)}
+.verdict{margin-top:13px;padding:11px 13px;background:var(--surface2);border-radius:var(--r-sm);font-size:13px;font-weight:500;line-height:1.4;border-left:3px solid var(--accent)}
+
+/* Categories */
+.cat-row{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.cat-icon{font-size:15px;width:22px;text-align:center;flex-shrink:0}
+.cat-info{flex:1;min-width:0}
+.cat-name{font-size:13px;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-bar-wrap{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.cat-bar{height:100%;border-radius:2px;transition:width 0.55s cubic-bezier(.4,0,.2,1)}
+.cat-amt{font-size:13px;font-family:"Syne",sans-serif;font-weight:700;color:var(--muted2);white-space:nowrap}
+
+/* Year bar chart */
+.year-bars{display:flex;gap:3px;align-items:flex-end;height:64px;margin-bottom:6px}
+.yb-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;cursor:pointer}
+.yb{width:100%;border-radius:3px 3px 0 0;background:var(--surface2);transition:height 0.55s cubic-bezier(.4,0,.2,1);min-height:2px}
+.yb.cur{background:var(--accent)}
+.yb.has{background:rgba(255,255,255,0.15)}
+.yb.sel{background:var(--accent);opacity:0.7}
+.yb-label{font-size:8px;color:var(--muted);margin-top:3px;text-align:center}
+.year-totals{display:flex;justify-content:space-between;margin-top:10px}
+.yt-item{text-align:center}
+.yt-val{font-family:"Syne",sans-serif;font-size:17px;font-weight:800}
+.yt-val.accent{color:var(--accent)}
+.yt-val.red{color:var(--red)}
+.yt-lbl{font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.05em}
+
+/* Savings table (year view) */
+.savings-table{width:100%;border-collapse:collapse;font-size:12px}
+.savings-table th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);padding:0 0 10px;text-align:right}
+.savings-table th:first-child{text-align:left}
+.savings-table td{padding:7px 0;border-top:1px solid var(--border);text-align:right;font-family:"Syne",sans-serif;font-weight:700;font-size:12px}
+.savings-table td:first-child{text-align:left;font-family:"Inter",sans-serif;font-weight:500;font-size:12px;color:var(--muted2)}
+.savings-table tr.total-row td{border-top:1px solid var(--border2);color:var(--text);padding-top:10px}
+.savings-table tr.total-row td:first-child{color:var(--text)}
+.pos{color:var(--accent)}
+.neg{color:var(--red)}
+.neu{color:var(--muted2)}
+
+/* Recent */
+.exp-item{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--border)}
+.exp-item:last-child{border-bottom:none;padding-bottom:0}
+.exp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.exp-info{flex:1;min-width:0}
+.exp-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exp-meta{font-size:11px;color:var(--muted);margin-top:1px}
+.exp-amt{font-family:"Syne",sans-serif;font-size:13px;font-weight:700;white-space:nowrap}
+
+/* Setup */
+.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:17px}
+.setup-input{width:100%;padding:11px 13px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-size:12px;font-family:"Inter",monospace;outline:none}
+.setup-input:focus{border-color:rgba(200,240,96,0.4)}
+.setup-input::placeholder{color:var(--muted)}
+.setup-hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
+
+/* Toast */
+.toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-16px);background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:9px 18px;border-radius:24px;font-size:13px;opacity:0;transition:all 0.22s;z-index:100;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(200,240,96,0.4);color:var(--accent)}
+.toast.err{border-color:rgba(255,107,91,0.4);color:var(--red)}
+
+.loading{display:flex;align-items:center;justify-content:center;padding:48px;color:var(--muted);font-size:13px;gap:10px}
+.dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);animation:blink 1.2s infinite;margin:0 2px}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.15}40%{opacity:1}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Overview</h1>
+      <div class="header-sub" id="hdr-sub">loading…</div>
+    </div>
+    <button class="refresh-btn" id="refresh-btn" onclick="loadData()">↻</button>
+  </div>
+  <div class="view-toggle">
+    <button class="toggle-btn active" id="btn-month" onclick="setView('month')">Month</button>
+    <button class="toggle-btn" id="btn-year"  onclick="setView('year')">Year</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="main" id="main"></div>
+
+<script>
+const SKEY = "exp_dash_v2";
+let cfg = {scriptUrl:"",nameA:"Person A",nameB:"Person B"};
+let allData = null;
+let view = "month";       // "month" | "year"
+let monthOffset = 0;      // 0 = current month
+let selYear = new Date().getFullYear();
+
+const CAT_ICONS = {Housing:"🏠",Utilities:"💡",Groceries:"🛒",Transport:"🚗","Going Out":"🍽️",Entertainment:"🎬",Sports:"🏋️",Health:"💊",Clothing:"👕",Travel:"✈️",Subscriptions:"📱",Savings:"💰",Other:"📦"};
+const CAT_COLORS = ["#C8F060","#5B9CF6","#FF6B5B","#2DD4BF","#F472B6","#A78BFA","#FB923C","#F5A623","#34D399","#60A5FA","#F87171","#A3E635","#94A3B8"];
+const MO = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function loadCfg(){try{const s=localStorage.getItem(SKEY);if(s)cfg={...cfg,...JSON.parse(s)}}catch(e){}}
+function saveCfg(){localStorage.setItem(SKEY,JSON.stringify(cfg))}
+
+function fmt(n){if(!n&&n!==0)return"€0";return"€"+Math.round(Math.abs(n)).toLocaleString("pt-PT")}
+function fmtd(n){if(!n&&n!==0)return"€0.00";return"€"+Math.abs(n).toLocaleString("pt-PT",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function sign(n){return n>=0?"+":"−"}
+function cls(n){return n>0?"pos":n<0?"neg":"neu"}
+
+function toast(msg,type=""){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.className="toast show "+type;
+  setTimeout(()=>t.className="toast",2600);
+}
+
+function monthKey(y,m){return MO[m]+" "+y}
+function nowKey(){const d=new Date();return monthKey(d.getFullYear(),d.getMonth())}
+
+function setView(v){
+  view=v;
+  document.getElementById("btn-month").classList.toggle("active",v==="month");
+  document.getElementById("btn-year").classList.toggle("active",v==="year");
+  render();
+}
+
+function changeMonth(d){monthOffset+=d;render()}
+
+async function loadData(){
+  const btn=document.getElementById("refresh-btn");
+  btn.classList.add("spin");
+  if(!cfg.scriptUrl){renderSetup();btn.classList.remove("spin");return}
+  try{
+    const res=await fetch(cfg.scriptUrl+"?action=getDashboardData",{mode:"cors"});
+    allData=await res.json();
+    cfg.nameA=allData.nameA||cfg.nameA;
+    cfg.nameB=allData.nameB||cfg.nameB;
+    saveCfg();
+    monthOffset=0;
+    render();
+    toast("Updated","ok");
+  }catch(e){toast("Could not load data","err");renderSetup()}
+  btn.classList.remove("spin");
+}
+
+function render(){
+  if(!allData){renderSetup();return}
+  document.getElementById("hdr-sub").textContent=cfg.nameA+" & "+cfg.nameB;
+  if(view==="month") renderMonth();
+  else renderYear();
+}
+
+// ── MONTH VIEW ────────────────────────────────────────────────────────────────
+function renderMonth(){
+  const now=new Date();
+  const td=new Date(now.getFullYear(),now.getMonth()+monthOffset,1);
+  const mKey=monthKey(td.getFullYear(),td.getMonth());
+  const isCur=monthOffset===0;
+
+  const exps=(allData.expenses||[]).filter(r=>r.month===mKey);
+  const incs=(allData.incomes||[]).filter(r=>r.month===mKey);
+
+  const spent    = exps.reduce((s,r)=>s+(+r.total||0),0);
+  const incA     = incs.reduce((s,r)=>s+(+r.amtA||0),0);
+  const incB     = incs.reduce((s,r)=>s+(+r.amtB||0),0);
+  const totalInc = incA+incB;
+  const net      = totalInc-spent;
+  const spentA   = exps.reduce((s,r)=>s+(+r.amtA||0),0);
+  const spentB   = exps.reduce((s,r)=>s+(+r.amtB||0),0);
+  const pctA     = spent>0?Math.round(spentA/spent*100):50;
+  const pctB     = 100-pctA;
+  const paidA    = exps.filter(r=>r.paidBy===cfg.nameA).reduce((s,r)=>s+(+r.total||0),0);
+  const balance  = paidA-spentA;
+
+  // categories
+  const cats={};
+  exps.forEach(r=>{const c=r.category||"Other";cats[c]=(cats[c]||0)+(+r.total||0)});
+  const sortedCats=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const maxCat=sortedCats[0]?sortedCats[0][1]:1;
+
+  // recent
+  const recent=[...exps].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+
+  let h=`
+  <div class="month-row">
+    <button class="month-nav" onclick="changeMonth(-1)">‹</button>
+    <span class="month-label">${mKey}</span>
+    <button class="month-nav" onclick="changeMonth(1)" ${isCur?"disabled":""}>›</button>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card hi">
+      <div class="stat-label">Total Spent</div>
+      <div class="stat-val accent sm">${fmt(spent)}</div>
+      <div class="stat-sub">${exps.length} transactions</div>
+      <div class="stat-icon">💸</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Net Savings</div>
+      <div class="stat-val ${net>=0?"accent":"red"} sm">${sign(net)}${fmt(net)}</div>
+      <div class="stat-sub">Income ${fmt(totalInc)}</div>
+      <div class="stat-icon">${net>=0?"📈":"📉"}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">${cfg.nameA}</div>
+      <div class="stat-val sm">${fmt(spentA)}</div>
+      <div class="stat-sub">${pctA}% of expenses</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">${cfg.nameB}</div>
+      <div class="stat-val sm">${fmt(spentB)}</div>
+      <div class="stat-sub">${pctB}% of expenses</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Split & Settlement</div>
+    <div class="split-row">
+      <span class="split-name">${cfg.nameA}</span>
+      <div class="split-bar-wrap"><div class="split-bar a" style="width:${pctA}%"></div></div>
+      <span class="split-pct">${pctA}%</span>
+    </div>
+    <div class="split-row">
+      <span class="split-name">${cfg.nameB}</span>
+      <div class="split-bar-wrap"><div class="split-bar b" style="width:${pctB}%"></div></div>
+      <span class="split-pct">${pctB}%</span>
+    </div>
+    <div class="verdict">
+      ${Math.abs(balance)<0.5
+        ?"✓ All settled — no transfers needed"
+        :balance>0
+          ?`${cfg.nameA} paid ${fmtd(balance)} extra → ${cfg.nameB} owes ${cfg.nameA} ${fmtd(balance)}`
+          :`${cfg.nameB} paid ${fmtd(Math.abs(balance))} extra → ${cfg.nameA} owes ${cfg.nameB} ${fmtd(Math.abs(balance))}`}
+    </div>
+  </div>`;
+
+  if(sortedCats.length){
+    h+=`<div class="card"><div class="card-title">By Category</div>`;
+    sortedCats.forEach(([cat,amt],i)=>{
+      const pct=Math.round(amt/maxCat*100);
+      const icon=CAT_ICONS[cat]||"📦";
+      const col=CAT_COLORS[i%CAT_COLORS.length];
+      h+=`<div class="cat-row">
+        <span class="cat-icon">${icon}</span>
+        <div class="cat-info">
+          <div class="cat-name">${cat}</div>
+          <div class="cat-bar-wrap"><div class="cat-bar" style="width:${pct}%;background:${col}"></div></div>
+        </div>
+        <span class="cat-amt">${fmt(amt)}</span>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+
+  if(recent.length){
+    h+=`<div class="card"><div class="card-title">Recent Expenses</div>`;
+    recent.forEach((r,i)=>{
+      const col=CAT_COLORS[Object.keys(CAT_ICONS).indexOf(r.category)%CAT_COLORS.length]||"#94A3B8";
+      const d=new Date(r.date);
+      const ds=isNaN(d)?"":" · "+d.toLocaleDateString("pt-PT",{day:"numeric",month:"short"});
+      h+=`<div class="exp-item">
+        <div class="exp-dot" style="background:${col}"></div>
+        <div class="exp-info">
+          <div class="exp-name">${r.name}</div>
+          <div class="exp-meta">${r.category}${ds}</div>
+        </div>
+        <span class="exp-amt">${fmtd(+r.total||0)}</span>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+
+  h+=setupCard();
+  document.getElementById("main").innerHTML=h;
+}
+
+// ── YEAR VIEW ─────────────────────────────────────────────────────────────────
+function renderYear(){
+  const exps=allData.expenses||[];
+  const incs=allData.incomes||[];
+  const yr=selYear;
+
+  // build per-month totals
+  const mData=MO.map((lbl,mi)=>{
+    const key=monthKey(yr,mi);
+    const mExp=exps.filter(r=>r.month===key);
+    const mInc=incs.filter(r=>r.month===key);
+    const spent  =mExp.reduce((s,r)=>s+(+r.total||0),0);
+    const incA   =mInc.reduce((s,r)=>s+(+r.amtA||0),0);
+    const incB   =mInc.reduce((s,r)=>s+(+r.amtB||0),0);
+    const spentA =mExp.reduce((s,r)=>s+(+r.amtA||0),0);
+    const spentB =mExp.reduce((s,r)=>s+(+r.amtB||0),0);
+    const savA   =incA-spentA;
+    const savB   =incB-spentB;
+    const savTot =savA+savB;
+    return {lbl,key,spent,incA,incB,spentA,spentB,savA,savB,savTot,totalInc:incA+incB};
+  });
+
+  const curMo=new Date().getMonth();
+  const isThisYear=yr===new Date().getFullYear();
+  const maxSpent=Math.max(...mData.map(m=>m.spent),1);
+
+  const yearSpent  =mData.reduce((s,m)=>s+m.spent,0);
+  const yearInc    =mData.reduce((s,m)=>s+m.totalInc,0);
+  const yearNet    =yearInc-yearSpent;
+  const yearSavA   =mData.reduce((s,m)=>s+m.savA,0);
+  const yearSavB   =mData.reduce((s,m)=>s+m.savB,0);
+
+  // year selector
+  const availYears=[...new Set([...exps,...incs].map(r=>r.month?r.month.split(" ")[1]:null).filter(Boolean))].sort();
+  if(!availYears.includes(String(yr))) availYears.push(String(yr));
+  availYears.sort();
+
+  let h=`
+  <div class="month-row">
+    <button class="month-nav" onclick="changeYear(-1)">‹</button>
+    <span class="month-label">${yr}</span>
+    <button class="month-nav" onclick="changeYear(1)" ${isThisYear?"disabled":""}>›</button>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card hi">
+      <div class="stat-label">Year Spent</div>
+      <div class="stat-val accent sm">${fmt(yearSpent)}</div>
+      <div class="stat-sub">Total income ${fmt(yearInc)}</div>
+      <div class="stat-icon">📅</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Year Net</div>
+      <div class="stat-val ${yearNet>=0?"accent":"red"} sm">${sign(yearNet)}${fmt(yearNet)}</div>
+      <div class="stat-sub">${cfg.nameA} ${sign(yearSavA)}${fmt(yearSavA)} · ${cfg.nameB} ${sign(yearSavB)}${fmt(yearSavB)}</div>
+      <div class="stat-icon">${yearNet>=0?"💰":"⚠️"}</div>
+    </div>
+  </div>
+
+  <!-- Monthly bar chart -->
+  <div class="card">
+    <div class="card-title">Monthly Spending</div>
+    <div class="year-bars">
+      ${mData.map((m,i)=>{
+        const h2=maxSpent>0?Math.max(Math.round(m.spent/maxSpent*56),m.spent>0?3:2):2;
+        const cls2=isThisYear&&i===curMo?"yb cur":m.spent>0?"yb has":"yb";
+        return`<div class="yb-wrap"><div class="${cls2}" style="height:${h2}px"></div><div class="yb-label">${m.lbl}</div></div>`;
+      }).join("")}
+    </div>
+    <div class="year-totals">
+      <div class="yt-item"><div class="yt-val accent">${fmt(yearSpent)}</div><div class="yt-lbl">Spent</div></div>
+      <div class="yt-item"><div class="yt-val">${fmt(yearInc)}</div><div class="yt-lbl">Income</div></div>
+      <div class="yt-item"><div class="yt-val ${yearNet>=0?"accent":"red"}">${sign(yearNet)}${fmt(yearNet)}</div><div class="yt-lbl">Net</div></div>
+    </div>
+  </div>
+
+  <!-- Monthly savings breakdown -->
+  <div class="card">
+    <div class="card-title">Monthly Savings Breakdown</div>
+    <table class="savings-table">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>${cfg.nameA}</th>
+          <th>${cfg.nameB}</th>
+          <th>Couple</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${mData.filter(m=>m.spent>0||m.totalInc>0).map(m=>`
+        <tr>
+          <td>${m.lbl}</td>
+          <td class="${cls(m.savA)}">${sign(m.savA)}${fmt(m.savA)}</td>
+          <td class="${cls(m.savB)}">${sign(m.savB)}${fmt(m.savB)}</td>
+          <td class="${cls(m.savTot)}">${sign(m.savTot)}${fmt(m.savTot)}</td>
+        </tr>`).join("")||`<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px 0;font-family:Inter">No data for ${yr}</td></tr>`}
+      </tbody>
+      <tfoot>
+        <tr class="total-row">
+          <td>Total</td>
+          <td class="${cls(yearSavA)}">${sign(yearSavA)}${fmt(yearSavA)}</td>
+          <td class="${cls(yearSavB)}">${sign(yearSavB)}${fmt(yearSavB)}</td>
+          <td class="${cls(yearNet)}">${sign(yearNet)}${fmt(yearNet)}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Year category breakdown -->
+  ${(()=>{
+    const cats={};
+    exps.filter(r=>r.month&&r.month.endsWith(yr)).forEach(r=>{const c=r.category||"Other";cats[c]=(cats[c]||0)+(+r.total||0)});
+    const sc=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,7);
+    if(!sc.length) return "";
+    const mx=sc[0][1];
+    let out=`<div class="card"><div class="card-title">By Category — ${yr}</div>`;
+    sc.forEach(([cat,amt],i)=>{
+      const pct=Math.round(amt/mx*100);
+      out+=`<div class="cat-row">
+        <span class="cat-icon">${CAT_ICONS[cat]||"📦"}</span>
+        <div class="cat-info">
+          <div class="cat-name">${cat}</div>
+          <div class="cat-bar-wrap"><div class="cat-bar" style="width:${pct}%;background:${CAT_COLORS[i%CAT_COLORS.length]}"></div></div>
+        </div>
+        <span class="cat-amt">${fmt(amt)}</span>
+      </div>`;
+    });
+    return out+"</div>";
+  })()}`;
+
+  h+=setupCard();
+  document.getElementById("main").innerHTML=h;
+}
+
+function changeYear(d){
+  selYear+=d;
+  render();
+}
+
+function setupCard(){
+  return`<div class="setup-card">
+    <div class="card-title" style="margin-bottom:10px">⚙ Connection</div>
+    <input class="setup-input" type="url" id="surl"
+      placeholder="https://script.google.com/macros/s/…/exec"
+      value="${cfg.scriptUrl}"
+      oninput="onUrl(this.value)">
+    <div class="setup-hint" id="shint">${cfg.scriptUrl?"✓ Connected — tap ↻ to refresh":"Paste your Apps Script URL"}</div>
+  </div>`;
+}
+
+function renderSetup(){
+  document.getElementById("hdr-sub").textContent="Setup needed";
+  document.getElementById("main").innerHTML=`
+  <div style="background:rgba(200,240,96,0.07);border:1px solid rgba(200,240,96,0.2);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--accent);line-height:1.5;margin-bottom:4px">
+    ⚡ Paste your Google Apps Script URL below to load your data.
+  </div>`+setupCard();
+}
+
+function onUrl(v){
+  cfg.scriptUrl=v.trim();saveCfg();
+  const hint=document.getElementById("shint");
+  if(v.includes("script.google.com")){hint.textContent="✓ Saved — tap ↻ to load";hint.style.color="var(--accent)"}
+  else if(v.length){hint.textContent="⚠ Doesn't look right";hint.style.color="var(--red)"}
+}
+
+loadCfg();
+if(cfg.scriptUrl) loadData();
+else renderSetup();
+</script>
+</body>
+</html>
